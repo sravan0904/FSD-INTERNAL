@@ -1,0 +1,46 @@
+// authHandlers.js
+const express = require('express');
+const mongoose = require('mongoose');
+const app = express();
+
+app.use(express.json());
+
+// Connect MongoDB
+mongoose.connect('mongodb://localhost:27017/userDB')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.log(err));
+
+// Schema and Model
+const userSchema = new mongoose.Schema({
+  username: String,
+  password: String,
+  email: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Registration handler
+app.post('/register', async (req, res) => {
+  const { username, password, email } = req.body;
+
+  const existingUser = await User.findOne({ username });
+  if (existingUser) return res.status(400).send('Username already exists!');
+
+  const newUser = new User({ username, password, email });
+  await newUser.save();
+  res.send('User registered successfully!');
+});
+
+// Login handler
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username, password });
+  if (user) {
+    res.send('Login successful!');
+  } else {
+    res.status(401).send('Invalid credentials!');
+  }
+});
+
+app.listen(3000, () => console.log('Server running at http://localhost:3000/'));
