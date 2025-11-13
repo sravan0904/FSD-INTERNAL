@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Todo SPA using REST API</title>
+</head>
+<body>
+  <h2>Todo List</h2>
+
+  <input id="taskInput" placeholder="Enter a task">
+  <button onclick="addTask()">Add Task</button>
+
+  <ul id="taskList"></ul>
+
+  <script>
+    // Fetch and display all tasks
+    async function loadTasks() {
+      const res = await fetch('/api/todos');
+      const tasks = await res.json();
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach(t => {
+        list.innerHTML += `<li>${t.task} 
+          <button onclick="deleteTask('${t._id}')">Delete</button></li>`;
+      });
+    }
+
+    // Add new task
+    async function addTask() {
+      const task = document.getElementById('taskInput').value;
+      await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      loadTasks();
+    }
+
+    // Delete task
+    async function deleteTask(id) {
+      await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
